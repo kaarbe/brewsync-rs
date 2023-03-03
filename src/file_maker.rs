@@ -53,7 +53,7 @@ impl FileMaker {
         if home_dir_value.is_err() {
             return Err(String::from("Unable to read home directory"));
         }
-        let file_path: String = format!("{}{}", home_dir_value.unwrap(), name);
+        let file_path: String = format!("{}/{}", home_dir_value.unwrap(), name);
         return match File::create(file_path) {
             Ok(file) => Ok(file),
             Err(_error) => Err(String::from("Unable to create backup file")),
