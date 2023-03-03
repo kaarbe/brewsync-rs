@@ -21,4 +21,12 @@ fn main() {
         Ok(result) => print!("{}", result),
         Err(error) => panic!("{}", error),
     }
+    let formulas_file = FileMaker::new().make_for_formulas();
+    if formulas_file.is_err() {
+        panic!("Cannot create backup file")
+    }
+    let casks_file = FileMaker::new().make_for_casks();
+    if casks_file.is_err() {
+        panic!("Cannot create backup file")
+    }
 }
