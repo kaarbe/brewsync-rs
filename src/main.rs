@@ -5,6 +5,7 @@ use crate::file_maker::FileMaker;
 
 mod homebrew;
 mod file_maker;
+mod package_type;
 
 fn main() {
     let is_installed = Homebrew::new(Command::new("brew")).check_if_installed();

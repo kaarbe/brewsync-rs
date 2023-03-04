@@ -3,11 +3,7 @@ use std::fs::File;
 use std::path::Path;
 use std::path::PathBuf;
 use home::home_dir;
-
-enum PackageType {
-    Formulae,
-    Cask,
-}
+use crate::package_type::PackageType;
 
 pub struct FileMaker;
 

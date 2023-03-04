@@ -1,7 +1,7 @@
 use std::process::Command;
 use std::process::Output;
-use std::io::Error;
 
+use crate::package_type::PackageType;
 
 pub struct Homebrew {
     command: Command,
@@ -14,21 +14,41 @@ impl Homebrew {
     }
 
     pub fn check_if_installed(&mut self) -> Result<bool, String> {
-        let cmd_execution: Result<Output, Error> = self.command
+        let cmd_execution = self.command
             .arg("--version")
             .output();
         return match cmd_execution {
-            Ok(output) => self.extract_from(output),
+            Ok(output) => self.output_to_bool(output),
             Err(_error) => Err(String::from("Unable to check installation")),
         };
     }
 
-    fn extract_from(&self, output: Output) -> Result<bool, String> {
+    fn output_to_bool(&self, output: Output) -> Result<bool, String> {
         let res = String::from_utf8(output.stdout.clone());
         return match res {
             Ok(content) => Ok(!content.contains("brew: command not found")),
             Err(_error) => Err(String::from("Unable to convert to string")),
         };
+    }
+    
+    pub fn get_installed(
+            &self, ptype: PackageType) -> Result<Vec<String>, String> {
+        let type_arg = match ptype {
+            PackageType::Formulae => "--formulae",
+            PackageType::Cask => "--cask",
+        };
+        let cmd_execution = self.command
+            .arg("list")
+            .arg(type_arg)
+            .output();
+        return match cmd_execution {
+            Ok(output) => self.output_to_vec(output),
+            Err(_error) => Err(String::from("Unable to convert to string")),
+        };
+    }
+
+    fn output_to_vec(&self, output: Output) -> Result<Vec<String>, String> {
+
     }
 }
 
