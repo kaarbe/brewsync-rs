@@ -32,7 +32,7 @@ impl Homebrew {
     }
     
     pub fn get_installed(
-            &self, ptype: PackageType) -> Result<Vec<String>, String> {
+            &mut self, ptype: PackageType) -> Result<Vec<String>, String> {
         let type_arg = match ptype {
             PackageType::Formulae => "--formulae",
             PackageType::Cask => "--cask",
@@ -48,7 +48,15 @@ impl Homebrew {
     }
 
     fn output_to_vec(&self, output: Output) -> Result<Vec<String>, String> {
-
+        let std_output: Vec<u8> = output.stdout;
+        let value_string_result = String::from_utf8(std_output);
+        return match value_string_result {
+            Ok(value_string) => Ok(
+                value_string.split_whitespace()
+                .map(str::to_string)
+                .collect()),
+            Err(_err) => Err(String::from("Unable to convert to vector")),
+        };
     }
 }
 
