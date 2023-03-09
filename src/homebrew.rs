@@ -30,9 +30,17 @@ impl Homebrew {
             Err(_error) => Err(String::from("Unable to convert to string")),
         };
     }
+
+    pub fn get_installed_formulas(&mut self) -> Result<Vec<u8>, String> {
+        return self.get_installed(PackageType::Formulae);
+    }
+    
+    pub fn get_installed_casks(&mut self) -> Result<Vec<u8>, String> {
+        return self.get_installed(PackageType::Cask);
+    }
     
     pub fn get_installed(
-            &mut self, ptype: PackageType) -> Result<Vec<String>, String> {
+            &mut self, ptype: PackageType) -> Result<Vec<u8>, String> {
         let type_arg = match ptype {
             PackageType::Formulae => "--formulae",
             PackageType::Cask => "--cask",
@@ -42,20 +50,8 @@ impl Homebrew {
             .arg(type_arg)
             .output();
         return match cmd_execution {
-            Ok(output) => self.output_to_vec(output),
+            Ok(output) => Ok(output.stdout),
             Err(_error) => Err(String::from("Unable to convert to string")),
-        };
-    }
-
-    fn output_to_vec(&self, output: Output) -> Result<Vec<String>, String> {
-        let std_output: Vec<u8> = output.stdout;
-        let value_string_result = String::from_utf8(std_output);
-        return match value_string_result {
-            Ok(value_string) => Ok(
-                value_string.split_whitespace()
-                .map(str::to_string)
-                .collect()),
-            Err(_err) => Err(String::from("Unable to convert to vector")),
         };
     }
 }
