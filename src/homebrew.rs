@@ -31,28 +31,28 @@ impl Homebrew {
         };
     }
 
-    pub fn get_installed_formulas(&mut self) -> Result<Vec<u8>, String> {
+    pub fn get_installed_formulas(&mut self) -> Option<Vec<u8>> {
         return self.get_installed(PackageType::Formulae);
     }
     
-    pub fn get_installed_casks(&mut self) -> Result<Vec<u8>, String> {
+    pub fn get_installed_casks(&mut self) -> Option<Vec<u8>> {
         return self.get_installed(PackageType::Cask);
     }
     
-    pub fn get_installed(
-            &mut self, ptype: PackageType) -> Result<Vec<u8>, String> {
+    fn get_installed(
+            &mut self, ptype: PackageType) -> Option<Vec<u8>> {
         let type_arg = match ptype {
             PackageType::Formulae => "--formulae",
             PackageType::Cask => "--cask",
         };
-        let cmd_execution = self.command
+        return self.command
             .arg("list")
             .arg(type_arg)
-            .output();
-        return match cmd_execution {
-            Ok(output) => Ok(output.stdout),
-            Err(_error) => Err(String::from("Unable to convert to string")),
-        };
+            .output()
+            .map_or(
+                None,
+                |output| Some(output.stdout),
+            );
     }
 }
 

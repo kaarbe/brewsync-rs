@@ -33,24 +33,25 @@ impl FileMaker {
             .expect(err_msg);
     }
     
-    pub fn make_for_formulas(&self) -> Result<File, ()> {
+    pub fn make_for_formulas(&self) -> Option<File> {
         return self.make_backup_file(PackageType::Formulae);
     }
 
-    pub fn make_for_casks(&self) -> Result<File, ()> {
+    pub fn make_for_casks(&self) -> Option<File> {
         return self.make_backup_file(PackageType::Cask);
     }
 
-    fn make_backup_file(&self, ptype: PackageType) -> Result<File, ()> {
+    fn make_backup_file(&self, ptype: PackageType) -> Option<File> {
         let name = match ptype {
             PackageType::Formulae => "formulas",
             PackageType::Cask => "casks",
         };
         let file_path = format!(
             "{}/.brewsync/{}", self.get_home_dir_path(), name);
-        return match File::create(file_path) {
-            Ok(file) => Ok(file),
-            Err(_error) => Err(()),
-        };
+        return File::create(file_path)
+            .map_or(
+                None,
+                |file| Some(file)
+            );
     }
 }
