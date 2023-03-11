@@ -4,17 +4,25 @@ use std::path::Path;
 use home::home_dir;
 use crate::package_type::PackageType;
 
-pub struct FileMaker;
+pub struct FileMaker {
+    home_path: String
+}
 
 impl FileMaker {
 
     pub fn new() -> FileMaker {
-        return FileMaker {};
+        let err_msg = "Unable to read home directory";
+        let home_path = home_dir()
+            .expect(err_msg)
+            .into_os_string()
+            .into_string()
+            .expect(err_msg);
+        return FileMaker { home_path };
     }
 
     pub fn make_backup_dir(&self) -> Result<(), ()> {
         let brewsync_path = format!(
-            "{}/{}", self.get_home_dir_path(), ".brewsync");
+            "{}/{}", self.home_path, ".brewsync");
         if Path::new(&brewsync_path).exists() {
             return Ok(());
         }
@@ -22,15 +30,6 @@ impl FileMaker {
             Ok(_) => Ok(()),
             Err(_error) => Err(()),
         };
-    }
-
-    fn get_home_dir_path(&self) -> String {
-        let err_msg = "Unable to read home directory";
-        return home_dir()
-            .expect(err_msg)
-            .into_os_string()
-            .into_string()
-            .expect(err_msg);
     }
     
     pub fn make_for_formulas(&self) -> Option<File> {
@@ -47,7 +46,7 @@ impl FileMaker {
             PackageType::Cask => "casks",
         };
         let file_path = format!(
-            "{}/.brewsync/{}", self.get_home_dir_path(), name);
+            "{}/.brewsync/{}", self.home_path, name);
         return File::create(file_path)
             .map_or(
                 None,
