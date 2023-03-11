@@ -20,8 +20,8 @@ fn main() {
     };
 
     match FileMaker::new().make_backup_dir() {
-        Ok(result) => print!("{}", result),
-        Err(error) => panic!("{}", error),
+        Ok(()) => print!("Backup directory found/created"),
+        Err(()) => panic!("Unable to create backup directory"),
     }
 
     let mut formulas_file = match FileMaker::new().make_for_formulas() {
