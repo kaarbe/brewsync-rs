@@ -5,7 +5,7 @@ use home::home_dir;
 use crate::package_type::PackageType;
 
 pub struct FileMaker {
-    home_path: String
+    brewsync_path: String
 }
 
 impl FileMaker {
@@ -17,16 +17,15 @@ impl FileMaker {
             .into_os_string()
             .into_string()
             .expect(err_msg);
-        return FileMaker { home_path };
+        let brewsync_path = format!("{}/{}", home_path, ".brewsync");
+        return FileMaker { brewsync_path };
     }
 
     pub fn make_backup_dir(&self) -> Result<(), ()> {
-        let brewsync_path = format!(
-            "{}/{}", self.home_path, ".brewsync");
-        if Path::new(&brewsync_path).exists() {
+        if Path::new(&self.brewsync_path).exists() {
             return Ok(());
         }
-        return match create_dir(brewsync_path) {
+        return match create_dir(&self.brewsync_path) {
             Ok(_) => Ok(()),
             Err(_error) => Err(()),
         };
@@ -45,8 +44,7 @@ impl FileMaker {
             PackageType::Formulae => "formulas",
             PackageType::Cask => "casks",
         };
-        let file_path = format!(
-            "{}/.brewsync/{}", self.home_path, name);
+        let file_path = format!("{}/{}", self.brewsync_path, name);
         return File::create(file_path)
             .map_or(
                 None,

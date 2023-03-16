@@ -11,19 +11,15 @@ fn main() {
         .expect("Unable to verify Homebrew installation");
     if !is_installed {
         panic!("Homebrew not installed");
-    };
-
-    let file_maker = FileMaker::new();
-    match file_maker.make_backup_dir() {
-        Ok(()) => print!("Backup directory found/created"),
-        Err(()) => panic!("Unable to create backup directory"),
     }
 
-    let mut formulas_file = file_maker 
-        .make_for_formulas()
+    let file_maker = FileMaker::new();
+    file_maker.make_backup_dir()
+        .expect("Unable to create backup directory");
+
+    let mut formulas_file = file_maker.make_for_formulas()
         .expect("Unable to create formulas file");
-    let mut casks_file = file_maker
-        .make_for_casks()
+    let mut casks_file = file_maker.make_for_casks()
         .expect("Unable to create casks file");
 
     let casks_installed = homebrew::get_installed_casks()

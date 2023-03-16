@@ -29,8 +29,8 @@ pub fn get_installed_casks() -> Option<Vec<u8>> {
     return get_installed(PackageType::Cask);
 }
 
-fn get_installed(ptype: PackageType) -> Option<Vec<u8>> {
-    let type_arg = match ptype {
+fn get_installed(package_type: PackageType) -> Option<Vec<u8>> {
+    let type_arg = match package_type {
         PackageType::Formulae => "--formulae",
         PackageType::Cask => "--cask",
     };
