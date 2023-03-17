@@ -1,4 +1,5 @@
 use std::io::Write;
+use clap::{ Parser, Subcommand };
 
 use crate::file_maker::FileMaker;
 
@@ -6,7 +7,26 @@ mod homebrew;
 mod file_maker;
 mod package_type;
 
+#[derive(Parser)]
+#[command(
+    author = "kaarbe",
+    about = "Backups the names of all packages installed via Homebrew",
+    version,
+)]
+struct Args {
+   #[command(subcommand)]
+   action: Action,
+}
+
+#[derive(Subcommand)]
+enum Action {
+    /// Configure Brewsync with values other than default
+    Config,
+} 
+
 fn main() {
+    let args = Args::parse();
+
     let is_installed = homebrew::is_installed()
         .expect("Unable to verify Homebrew installation");
     if !is_installed {
