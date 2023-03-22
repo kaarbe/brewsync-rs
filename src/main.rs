@@ -10,7 +10,8 @@ mod package_type;
 #[derive(Parser)]
 #[command(
     author = "kaarbe",
-    about = "Backups the names of all packages installed via Homebrew",
+    about = "Backups names of all packages installed via Homebrew",
+    name = "brewsync",
     version,
 )]
 struct Args {
@@ -26,6 +27,9 @@ enum Action {
 
 fn main() {
     let args = Args::parse();
+    match args.action {
+        Action::Config => print!("configuration path"),
+    }
 
     let is_installed = homebrew::is_installed()
         .expect("Unable to verify Homebrew installation");
