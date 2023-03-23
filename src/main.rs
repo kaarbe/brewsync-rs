@@ -27,7 +27,7 @@ enum Command {
 
 fn main() {
     match Args::parse().subcommand {
-        Some(command)=> handle_subcommand(command),
+        Some(subcommand)=> handle_subcommand(subcommand),
         None => handle_main_command(),
     }
 }
