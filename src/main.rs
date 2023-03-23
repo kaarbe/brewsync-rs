@@ -16,21 +16,29 @@ mod package_type;
 )]
 struct Args {
    #[command(subcommand)]
-   action: Action,
+   subcommand: Option<Command>,
 }
 
 #[derive(Subcommand)]
-enum Action {
+enum Command {
     /// Configure Brewsync with values other than default
     Config,
 } 
 
 fn main() {
-    let args = Args::parse();
-    match args.action {
-        Action::Config => print!("configuration path"),
+    match Args::parse().subcommand {
+        Some(command)=> handle_subcommand(command),
+        None => handle_main_command(),
     }
+}
+    
+fn handle_subcommand(command: Command) {
+    match command {
+        Command::Config => print!("config"),
+    };
+}
 
+fn handle_main_command() {
     let is_installed = homebrew::is_installed()
         .expect("Unable to verify Homebrew installation");
     if !is_installed {
@@ -50,9 +58,10 @@ fn main() {
         .expect("Unable to read installed casks");
     let formulas_installed = homebrew::get_installed_formulas()
         .expect("Unable to read installed formulas");
-    
+
     casks_file.write_all(casks_installed.as_slice())
         .expect("Unable to write to file");
     formulas_file.write_all(formulas_installed.as_slice())
         .expect("Unable to write to file");
 }
+
