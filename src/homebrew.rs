@@ -1,24 +1,20 @@
 use std::process::Command;
-use std::process::Output;
 
 use crate::package_type::PackageType;
 
 pub fn is_installed() -> Option<bool> {
-    return Command::new("brew")
+ return Command::new("brew")
         .arg("--version")
         .output()
         .map_or(
             None,
-            |output| output_to_bool(output)
-        );
-}
-
-fn output_to_bool(output: Output) -> Option<bool> {
-    return String::from_utf8(output.stdout.clone())
+            |output| Some(String::from_utf8(output.stdout)))
+        .map_or(
+            None, 
+            |stdout| Some(stdout.unwrap_or(String::from(""))))
         .map_or(
             None,
-            |content| Some(!content.contains("brew: command not found"))
-        );
+            |text| Some(!text.contains("brew: command not found")));
 }
 
 pub fn get_installed_formulas() -> Option<Vec<u8>> {
@@ -40,7 +36,6 @@ fn get_installed(package_type: PackageType) -> Option<Vec<u8>> {
         .output()
         .map_or(
             None,
-            |output| Some(output.stdout)
-        );
+            |output| Some(output.stdout));
 }
 
