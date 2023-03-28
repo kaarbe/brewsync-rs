@@ -11,7 +11,7 @@ pub fn is_installed() -> Option<bool> {
             |output| Some(String::from_utf8(output.stdout)))
         .map_or(
             None, 
-            |stdout| Some(stdout.unwrap_or(String::from(""))))
+            |stdout| Some(stdout.unwrap_or(String::new())))
         .map_or(
             None,
             |text| Some(!text.contains("brew: command not found")));
@@ -26,16 +26,19 @@ pub fn get_installed_casks() -> Option<Vec<u8>> {
 }
 
 fn get_installed(package_type: PackageType) -> Option<Vec<u8>> {
-    let type_arg = match package_type {
-        PackageType::Formulae => "--formulae",
-        PackageType::Cask => "--cask",
-    };
     return Command::new("brew")
         .arg("list")
-        .arg(type_arg)
+        .arg(get_type_arg_for(package_type))
         .output()
         .map_or(
             None,
             |output| Some(output.stdout));
+}
+
+fn get_type_arg_for(package_type: PackageType) -> String {
+    return match package_type {
+        PackageType::Formulae => "--formulae".to_string(),
+        PackageType::Cask => "--cask".to_string(),
+    };
 }
 

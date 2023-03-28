@@ -39,12 +39,12 @@ impl FileMaker {
         return self.make_backup_file(PackageType::Cask);
     }
 
-    fn make_backup_file(&self, ptype: PackageType) -> Option<File> {
-        let name = match ptype {
+    fn make_backup_file(&self, package_type: PackageType) -> Option<File> {
+        let file_name = match package_type {
             PackageType::Formulae => "formulas",
             PackageType::Cask => "casks",
         };
-        let file_path = format!("{}/{}", self.brewsync_path, name);
+        let file_path = format!("{}/{}", self.brewsync_path, file_name);
         return File::create(file_path)
             .map_or(
                 None,
@@ -52,3 +52,4 @@ impl FileMaker {
             );
     }
 }
+
