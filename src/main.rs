@@ -1,4 +1,5 @@
 use std::io::Write;
+use std::process::ExitCode;
 use clap::{ Parser, Subcommand };
 use crate::file_maker::FileMaker;
 
@@ -24,29 +25,34 @@ enum Command {
     Config,
 } 
 
-fn main() {
-    match Args::parse().subcommand {
+fn main() -> ExitCode {
+    return match Args::parse().subcommand {
         Some(subcommand)=> handle_subcommand(subcommand),
         None => handle_main_command(),
-    }
+    };
 }
     
-fn handle_subcommand(command: Command) {
+fn handle_subcommand(command: Command) -> ExitCode {
     match command {
         Command::Config => print!("config"),
     };
+    return ExitCode::SUCCESS;
 }
 
-fn handle_main_command() {
+fn handle_main_command() -> ExitCode {
     let is_installed = homebrew::is_installed()
         .expect("Unable to verify Homebrew installation");
+
     if !is_installed {
-        panic!("Homebrew not installed");
+        eprint!("Failure: Homebrew not installed");
+        return ExitCode::FAILURE;
     }
 
     let file_maker = FileMaker::new();
-    file_maker.make_backup_dir()
-        .expect("Unable to create backup directory");
+    if file_maker.make_backup_dir().is_err() {
+        eprint!("Failure: Unable to create backup directory");
+        return ExitCode::FAILURE;
+    }
 
     let mut formulas_file = file_maker.make_for_formulas()
         .expect("Unable to create formulas file");
@@ -58,9 +64,14 @@ fn handle_main_command() {
     let formulas_installed = homebrew::get_installed_formulas()
         .expect("Unable to read installed formulas");
 
-    casks_file.write_all(casks_installed.as_slice())
-        .expect("Unable to write to file");
-    formulas_file.write_all(formulas_installed.as_slice())
-        .expect("Unable to write to file");
+    if casks_file.write_all(casks_installed.as_slice()).is_err() {
+        eprint!("Failure: Unable to write to file");
+        return ExitCode::FAILURE;
+    }
+    if formulas_file.write_all(formulas_installed.as_slice()).is_err() {
+        eprint!("Failure: Unable to write to file");
+        return ExitCode::FAILURE;
+    }
+    return ExitCode::SUCCESS;
 }
 
