@@ -1,5 +1,8 @@
 use std::io::Write;
-use clap::{ Parser, Subcommand }; use crate::file_maker::FileMaker; mod homebrew;
+use clap::{ Parser, Subcommand };
+use crate::file_maker::FileMaker;
+
+mod homebrew;
 mod file_maker;
 mod package_type;
 
