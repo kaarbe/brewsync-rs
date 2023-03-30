@@ -1,4 +1,4 @@
 pub enum PackageType {
-    Formulae,
-    Cask,
+  Formulae,
+  Cask,
 }

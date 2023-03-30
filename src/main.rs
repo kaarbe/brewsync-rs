@@ -1,77 +1,108 @@
+use crate::file_maker::FileMaker;
+use clap::{Parser, Subcommand};
+use std::fs::File;
 use std::io::Write;
 use std::process::ExitCode;
-use clap::{ Parser, Subcommand };
-use crate::file_maker::FileMaker;
 
-mod homebrew;
 mod file_maker;
+mod homebrew;
 mod package_type;
 
 #[derive(Parser)]
 #[command(
-    author = "kaarbe",
-    about = "Backups names of all packages installed via Homebrew",
-    name = "brewsync",
-    version,
+  author = "kaarbe",
+  about = "Backups names of all packages installed via Homebrew",
+  name = "brewsync",
+  version
 )]
 struct Args {
-   #[command(subcommand)]
-   subcommand: Option<Command>,
+  #[command(subcommand)]
+  subcommand: Option<Command>,
 }
 
 #[derive(Subcommand)]
 enum Command {
-    /// Configure Brewsync with values other than default
-    Config,
-} 
+  /// Configure Brewsync with values other than default
+  Config,
+}
 
 fn main() -> ExitCode {
-    return match Args::parse().subcommand {
-        Some(subcommand)=> handle_subcommand(subcommand),
-        None => handle_main_command(),
-    };
+  return match Args::parse().subcommand {
+    Some(subcommand) => handle_subcommand(subcommand),
+    None => handle_main_command(),
+  };
 }
-    
+
 fn handle_subcommand(command: Command) -> ExitCode {
-    match command {
-        Command::Config => print!("config"),
-    };
-    return ExitCode::SUCCESS;
+  match command {
+    Command::Config => print!("config"),
+  };
+  return ExitCode::SUCCESS;
 }
 
 fn handle_main_command() -> ExitCode {
-    let is_installed = homebrew::is_installed()
-        .expect("Unable to verify Homebrew installation");
-
-    if !is_installed {
+  match homebrew::is_installed() {
+    None => {
+      eprint!("Failure: Unable to verify Homebrew installation");
+      return ExitCode::FAILURE;
+    }
+    Some(result) => {
+      if result == false {
         eprint!("Failure: Homebrew not installed");
         return ExitCode::FAILURE;
+      }
     }
+  };
 
-    let file_maker = FileMaker::new();
-    if file_maker.make_backup_dir().is_err() {
-        eprint!("Failure: Unable to create backup directory");
-        return ExitCode::FAILURE;
-    }
+  let file_maker = FileMaker::new();
+  if file_maker.make_backup_dir().is_err() {
+    eprint!("Failure: Unable to create backup directory");
+    return ExitCode::FAILURE;
+  }
 
-    let mut formulas_file = file_maker.make_for_formulas()
-        .expect("Unable to create formulas file");
-    let mut casks_file = file_maker.make_for_casks()
-        .expect("Unable to create casks file");
+  let mut formulas_file: File;
+  if let Some(file) = file_maker.make_for_formulas() {
+    formulas_file = file;
+  } else {
+    eprint!("Failure: Unable to create formulas file");
+    return ExitCode::FAILURE;
+  }
 
-    let casks_installed = homebrew::get_installed_casks()
-        .expect("Unable to read installed casks");
-    let formulas_installed = homebrew::get_installed_formulas()
-        .expect("Unable to read installed formulas");
+  let mut casks_file: File;
+  if let Some(file) = file_maker.make_for_casks() {
+    casks_file = file;
+  } else {
+    eprint!("Failure: Unable to create casks file");
+    return ExitCode::FAILURE;
+  }
 
-    if casks_file.write_all(casks_installed.as_slice()).is_err() {
-        eprint!("Failure: Unable to write to file");
-        return ExitCode::FAILURE;
-    }
-    if formulas_file.write_all(formulas_installed.as_slice()).is_err() {
-        eprint!("Failure: Unable to write to file");
-        return ExitCode::FAILURE;
-    }
-    return ExitCode::SUCCESS;
+  let casks_installed: Vec<u8>;
+  if let Some(casks) = homebrew::get_installed_casks() {
+    casks_installed = casks;
+  } else {
+    eprint!("Failure: Unable to read installed casks");
+    return ExitCode::FAILURE;
+  }
+
+  let formulas_installed: Vec<u8>;
+  if let Some(formulas) = homebrew::get_installed_formulas() {
+    formulas_installed = formulas;
+  } else {
+    eprint!("Failure: Unable to read installed formulas");
+    return ExitCode::FAILURE;
+  }
+
+  if casks_file.write_all(casks_installed.as_slice()).is_err() {
+    eprint!("Failure: Unable to write to file");
+    return ExitCode::FAILURE;
+  }
+
+  if formulas_file
+    .write_all(formulas_installed.as_slice())
+    .is_err()
+  {
+    eprint!("Failure: Unable to write to file");
+    return ExitCode::FAILURE;
+  }
+  return ExitCode::SUCCESS;
 }
-
