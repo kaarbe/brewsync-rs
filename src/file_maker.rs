@@ -9,15 +9,16 @@ pub struct FileMaker {
 }
 
 impl FileMaker {
-  pub fn new() -> FileMaker {
-    let err_msg = "Unable to read home directory";
-    let home_path = home_dir()
-      .expect(err_msg)
-      .into_os_string()
-      .into_string()
-      .expect(err_msg);
-    let brewsync_path = format!("{}/{}", home_path, ".brewsync");
-    return FileMaker { brewsync_path };
+  pub fn new() -> Option<FileMaker> {
+    let home_path_read: Option<String> = home_dir()
+        .map_or(None, |path_buf| Some(path_buf.into_os_string()))
+        .map_or(None, |os_string| os_string.into_string().ok());
+    if let Some(home_path) = home_path_read {
+      let brewsync_path = format!("{}/{}", home_path, ".brewsync");
+      return Some(FileMaker { brewsync_path });
+    } else {
+      return None;
+    }
   }
 
   pub fn make_backup_dir(&self) -> Result<(), ()> {
@@ -44,7 +45,6 @@ impl FileMaker {
       PackageType::Cask => "casks",
     };
     let file_path = format!("{}/{}", self.brewsync_path, file_name);
-    return File::create(file_path)
-      .map_or(None, |file| Some(file));
+    return File::create(file_path).ok();
   }
 }

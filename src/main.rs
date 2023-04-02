@@ -54,7 +54,14 @@ fn handle_main_command() -> ExitCode {
     }
   };
 
-  let file_maker = FileMaker::new();
+  let file_maker: FileMaker;
+  if let Some(maker) = FileMaker::new() {
+    file_maker = maker;
+  } else {
+    eprint!("Failure: Unable to read home directory path");
+    return ExitCode::FAILURE;
+  }
+
   if file_maker.make_backup_dir().is_err() {
     eprint!("Failure: Unable to create backup directory");
     return ExitCode::FAILURE;
