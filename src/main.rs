@@ -45,9 +45,19 @@ fn handle_subcommand(command: Command) -> ExitCode {
       }
 
       if file_maker.make_config_dir().is_err() {
-        eprint!("Failure: Unable to create backup directory");
+        eprint!("Failure: Unable to create config directory");
         return ExitCode::FAILURE;
       }
+
+      // TODO
+      let _config_file: File;
+      if let Some(file) = file_maker.make_config_file() {
+        _config_file = file;
+      } else {
+        eprint!("Failure: Unable to create config file");
+        return ExitCode::FAILURE;
+      }
+
       return ExitCode::SUCCESS;
     },
   };

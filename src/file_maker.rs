@@ -43,10 +43,14 @@ impl FileMaker {
 
   fn make_backup_file(&self, package_type: PackageType) -> Option<File> {
     let file_name = match package_type {
-      PackageType::Formulae => "formulas",
-      PackageType::Cask => "casks",
+      PackageType::Formulae => "formulas".to_string(),
+      PackageType::Cask => "casks".to_string(),
     };
-    let file_path = format!("{}/{}", self.brewsync_path, file_name);
+    return self.make_file(&self.brewsync_path, file_name);
+  }
+
+  fn make_file(&self, base_path: &String, file_name: String) -> Option<File> {
+    let file_path = format!("{}/{}", base_path, file_name);
     return File::create(file_path).ok();
   }
 
@@ -58,5 +62,10 @@ impl FileMaker {
       Ok(_) => Ok(()),
       Err(_error) => Err(()),
     };
+  }
+  
+  pub fn make_config_file(&self) -> Option<File> {
+    let file_name = "brewsync".to_string();
+    return self.make_file(&self.config_path, file_name);
   }
 }
