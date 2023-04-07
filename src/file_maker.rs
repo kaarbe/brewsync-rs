@@ -6,6 +6,7 @@ use std::path::Path;
 
 pub struct FileMaker {
   brewsync_path: String,
+  config_path: String,
 }
 
 impl FileMaker {
@@ -15,7 +16,8 @@ impl FileMaker {
         .map_or(None, |os_string| os_string.into_string().ok());
     if let Some(home_path) = home_path_read {
       let brewsync_path = format!("{}/{}", home_path, ".brewsync");
-      return Some(FileMaker { brewsync_path });
+      let config_path = format!("{}/{}", home_path, ".config");
+      return Some(FileMaker { brewsync_path, config_path });
     } else {
       return None;
     }
@@ -46,5 +48,15 @@ impl FileMaker {
     };
     let file_path = format!("{}/{}", self.brewsync_path, file_name);
     return File::create(file_path).ok();
+  }
+
+  pub fn make_config_dir(&self) -> Result<(), ()> {
+    if Path::new(&self.config_path).exists() {
+      return Ok(());
+    }
+    return match create_dir(&self.config_path) {
+      Ok(_) => Ok(()),
+      Err(_error) => Err(()),
+    };
   }
 }

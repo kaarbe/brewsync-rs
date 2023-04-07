@@ -35,9 +35,22 @@ fn main() -> ExitCode {
 
 fn handle_subcommand(command: Command) -> ExitCode {
   match command {
-    Command::Config => print!("config"),
+    Command::Config => {
+      let file_maker: FileMaker;
+      if let Some(maker) = FileMaker::new() {
+        file_maker = maker;
+      } else {
+        eprint!("Failure: Unable to read home directory path");
+        return ExitCode::FAILURE;
+      }
+
+      if file_maker.make_config_dir().is_err() {
+        eprint!("Failure: Unable to create backup directory");
+        return ExitCode::FAILURE;
+      }
+      return ExitCode::SUCCESS;
+    },
   };
-  return ExitCode::SUCCESS;
 }
 
 fn handle_main_command() -> ExitCode {
